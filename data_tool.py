@@ -407,6 +407,8 @@ def less_dimensions_counts(data, train: bool):
 def get_informations_data(path_to_data: str):
     data = read_csv(path_to_data)
 
+    # Number of games per player
+
     count_empty_plays = 0
     count_plays_per_player = {}
 
@@ -422,7 +424,6 @@ def get_informations_data(path_to_data: str):
     print(f"Empty plays : {count_empty_plays}")
     print(f"Number of players : {len(count_plays_per_player.keys())}")
 
-    # Sort and plot number of games per player
     sorted_list = sorted(
         count_plays_per_player.items(),
         key=lambda item: item[1],
@@ -434,18 +435,85 @@ def get_informations_data(path_to_data: str):
         sorted_x.append(elem[0].split('/')[-2])
         sorted_y.append(elem[1])
     plt.bar(sorted_x, sorted_y, width=0.5, color='r', align='edge')
+    # Hide the x labels because unreadable
+    plt.xticks([])
     plt.show()
 
-    # Number of actions per player for the first 30 seconds
+    # Number of actions per play
 
-    count_60_per_play = {}
-    for play in enumerate(data):
+    count_actions_per_play = {}
+    for index_play, play in enumerate(data):
         nb_actions = 0
-        t_stamp = 0
+        # t_stamp = 0
+        for index, elem in enumerate(play):
+            if index < 2:
+                continue
+            """
+            if t_stamp > 30:
+                break
+
+            if 't' in elem and "hotkey" not in elem:
+                t_stamp = int(elem.split('t')[1])
+            else:
+                nb_actions += 1
+            """
+            if 't' in elem and "hotkey" not in elem:
+                continue
+
+            nb_actions += 1
+
+        count_actions_per_play[f"play_{index_play}"] = nb_actions
+
+    sorted_list = sorted(
+        count_actions_per_play.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+    sorted_x = []
+    sorted_y = []
+    for elem in sorted_list:
+        sorted_x.append(elem[0])
+        sorted_y.append(elem[1])
+
+    plt.bar(sorted_x, sorted_y, width=0.5, color='r', align='edge')
+    plt.xticks([])
+    plt.show()
+
+    # Average number of actions per player
+    count_actions_per_player = {}
+    count_games_per_player = {}
+    for index_play, play in enumerate(data):
+        id_player = play[0]
+        if id_player not in count_games_per_player:
+            count_games_per_player[id_player] = 0
+            count_actions_per_player[id_player] = 0
+        else:
+            count_games_per_player[id_player] += 1
+
         for index, elem in enumerate(play):
             if index < 2:
                 continue
 
-            if 't' in elem:
+            if 't' in elem and "hotkey" not in elem:
+                continue
 
-    # Average number of actions per player first 30 seconds
+            count_actions_per_player[id_player] += 1
+
+    for player in count_games_per_player:
+        count_actions_per_player[player] = count_actions_per_player[player] / count_games_per_player[player] 
+
+    sorted_list = sorted(
+        count_actions_per_player.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+    sorted_x = []
+    sorted_y = []
+    for elem in sorted_list:
+        sorted_x.append(elem[0])
+        sorted_y.append(elem[1])
+
+    plt.bar(sorted_x, sorted_y, width=0.5, color='r', align='edge')
+    plt.xticks([])
+    plt.show()
+    # APM per player ?
