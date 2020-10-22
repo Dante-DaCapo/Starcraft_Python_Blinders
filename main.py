@@ -165,7 +165,8 @@ def evaluate_model(path_file_train):
     print("Read csv ...")
     data = data_tool.read_csv(path_file_train)
     print("Get Features ...")
-    X = data_tool.get_freq_all_actions_no_pandas(data, train=True)
+    X = data_tool.get_features(data, train=True)
+    # X = data_tool.get_freq_all_actions_no_pandas(data, train=True)
     # X = data_tool.less_dimensions_counts(data, train=True)
     # X = data_tool.get_counts_timed_no_pandas(data, train=True)
     print("Testing model...")
@@ -239,7 +240,7 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
     print("Read csv ...")
     data = data_tool.read_csv(path_file_train)
     print("Get Features ...")
-    X = data_tool.get_freq_all_actions_no_pandas(data, train=True)
+    X = data_tool.get_features(data, train=True)
     print("Train model...")
     y = []
     for elem in X:
@@ -251,7 +252,7 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
     print("Read csv test data...")
     data = data_tool.read_csv(path_file_test)
     print("Get Features test data ...")
-    features = data_tool.get_freq_all_actions_no_pandas(data, train=False)
+    features = data_tool.get_features(data, train=False)
 
     print("Evaluate results...")
     with open(namefile, 'w') as sub_file:
@@ -263,15 +264,13 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
 
 
 if __name__ == "__main__":
-    """
     train_and_make_predictions(
         "starcraft-2-player-prediction-challenge-2020/TRAIN.CSV",
         "starcraft-2-player-prediction-challenge-2020/TEST.CSV",
-        "Results/19_SUBMISSION.CSV"
+        "Results/20_SUBMISSION.CSV"
     )
-
     # evaluate_model("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     print("Done")
-    """
-    data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+
+    # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")

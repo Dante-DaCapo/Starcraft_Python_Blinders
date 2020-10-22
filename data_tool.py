@@ -1,10 +1,8 @@
 # coding: utf-8
 from enum import Enum
-import collections
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import pprint
 
 class PlayedRace(Enum):
     Protoss = 0
@@ -31,25 +29,7 @@ def read_csv(path_to_file: str):
     with open(path_to_file, 'r') as csv_file:
         for line in csv_file.read().splitlines():
             content.append(line.split(','))
-    """
-    id_players = {}
-    for line in content:
-        if line[0] not in id_players:
-            id_players[line[0]] = ''
-    
-    for line in content:
-        if 'xx.battle.net' in line[0]:
-            name = line[0].replace(
-                'http://xx.battle.net/sc2/en/profile/',
-                ''
-            )
-            name = name.split('/')[2]
 
-            for id in id_players.keys():
-                if name in id:
-                    line[0] = id
-                    break
-    """
     return content
 
 
@@ -404,6 +384,122 @@ def less_dimensions_counts(data, train: bool):
     return featured_data
 
 
+def get_features(data, train: bool):
+    if train:
+        labels = ['id', 'PlayedRace', 'apm', 'duration', 'created', 'updated', 'used', 'Base', 's', 'SingleMineral']
+    else:
+        labels = ['PlayedRace', 'apm', 'duration', 'created', 'updated', 'used', 'Base', 's', 'SingleMineral']
+    for i in range(0, 10):
+        for j in range(0, 3):
+            key = f"hotkey{i}{j}"
+            labels.append(key)
+
+    # Actions under 20sec
+    to_add = []
+    for i, elem in enumerate(labels):
+        if train and i < 4:
+            continue
+        elif not train and i < 3:
+            continue
+        to_add.append(f"{elem}:T20")
+    labels.extend(to_add)
+    
+    # Actions under 40sec
+    to_add = []
+    for i, elem in enumerate(labels):
+        if train and i < 4:
+            continue
+        elif not train and i < 3:
+            continue
+        to_add.append(f"{elem}:T40")
+    labels.extend(to_add)
+
+    # Actions under 60sec
+    to_add = []
+    for i, elem in enumerate(labels):
+        if train and i < 4:
+            continue
+        elif not train and i < 3:
+            continue
+        to_add.append(f"{elem}:T60")
+    labels.extend(to_add)
+
+    # Action per minute and duration
+    # labels.append('apm')
+    # labels.append('duration')
+
+    featured_data = []
+
+    for play in data:
+        t_party = 0
+        count_hotkey = 0
+        if len(play) < 3:
+            continue
+        new_line = [0]*len(labels)
+        if train:
+            number_of_actions = len(play) - 2
+        else:
+            number_of_actions = len(play) - 1
+
+        for index, elem in enumerate(play):
+            if index == 0:
+                if train:
+                    new_line[0] = elem
+                else:
+                    new_line[0] = PlayedRace[elem].value
+                continue
+
+            if index == 1 and train:
+                new_line[labels.index("PlayedRace")] = PlayedRace[elem].value
+                continue
+
+            if 't' != elem[0]:
+                new_line[labels.index(elem)] += 1
+
+                if t_party < 20:
+                    new_line[labels.index(f"{elem}:T20")] += 1
+                if t_party < 40:
+                    new_line[labels.index(f"{elem}:T40")] += 1
+                if t_party < 60:
+                    new_line[labels.index(f"{elem}:T60")] += 1
+
+                if "hotkey" in elem:
+                    count_hotkey += 1
+                    status = int(elem[-1])
+                    if status == 0:
+                        new_line[labels.index("created")] += 1
+                    elif status == 1:
+                        new_line[labels.index("updated")] += 1
+                    elif status == 2:
+                        new_line[labels.index("used")] += 1
+
+            else:
+                t_party = int(elem.split('t')[1])
+                number_of_actions -= 1
+
+        for i in range(0, len(new_line)):
+            if ":T20" not in labels[i] and ":T40" not in labels[i] and ":T60" not in labels[i] :
+                if train and i > 6:
+                    new_line[i] = new_line[i]/number_of_actions
+                elif not train and i > 5:
+                    new_line[i] = new_line[i]/number_of_actions
+
+        # Freq Hotkeys
+        new_line[labels.index("created")] = new_line[labels.index("created")]/count_hotkey
+        new_line[labels.index("updated")] = new_line[labels.index("updated")]/count_hotkey
+        new_line[labels.index("used")] = new_line[labels.index("used")]/count_hotkey
+        # APM
+        new_line[labels.index("apm")] = (number_of_actions/((t_party+5)/60))
+        # Duration
+        new_line[labels.index("duration")] = t_party+5
+
+        featured_data.append(new_line)
+
+    print(featured_data[0])
+    print(labels)
+    return featured_data
+
+
 def get_informations_data(path_to_data: str):
     data = read_csv(path_to_data)
 
@@ -516,4 +612,7 @@ def get_informations_data(path_to_data: str):
     plt.bar(sorted_x, sorted_y, width=0.5, color='r', align='edge')
     plt.xticks([])
     plt.show()
+
     # APM per player ?
+    # Proportion des races jouées ? 
+    # Durée moyenne des parties d'un joueur ?
