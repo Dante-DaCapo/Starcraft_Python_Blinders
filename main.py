@@ -1,5 +1,6 @@
 # coding: utf-8
 import pickle
+from collections import OrderedDict
 import graphviz
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedShuffleSplit, cross_val_predict
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
@@ -7,12 +8,13 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import classification_report, confusion_matrix, explained_variance_score
 from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, VotingClassifier, ExtraTreesClassifier, GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn import tree
 from sklearn import svm
 import data_tool
+import matplotlib.pyplot as plt
 
 
 def train_model_and_store_count_hotkeys(path_model: str):
@@ -161,6 +163,7 @@ def get_png_of_decision_tree(model, name):
     # Then terminal : dot -Tpng "name" -o "name".png
 
 
+
 def evaluate_model(path_file_train):
     print("Read csv ...")
     data = data_tool.read_csv(path_file_train)
@@ -174,8 +177,74 @@ def evaluate_model(path_file_train):
     for elem in X:
         y.append(elem.pop(0))
 
-    classifier = RandomForestClassifier()
-    # classifier = ExtraTreesClassifier(n_estimators=2000)
+    """
+    #   One classifier for each race
+    Protoss = 0
+    Zerg = 1
+    Terran = 2
+
+    terran_games = []
+    protoss_games = []
+    zerg_games = []
+
+    y_terran_games = []
+    y_protoss_games = []
+    y_zerg_games = []
+
+    for index, values in enumerate(X):
+        if values[0] == Zerg:
+            zerg_games.append(values)
+            y_zerg_games.append(y[index])
+        elif values[0] == Protoss:
+            protoss_games.append(values)
+            y_protoss_games.append(y[index])
+        elif values[0] == Terran:
+            terran_games.append(values)
+            y_terran_games.append(y[index])
+
+    classifier_terran = RandomForestClassifier()
+    classifier_zerg = RandomForestClassifier()
+    classifier_protoss = RandomForestClassifier
+
+    # Terran score
+    scores = cross_val_score(classifier_terran, terran_games, y_terran_games, cv=5)
+    avg = 0
+    for s in scores:
+        avg += s
+    print(scores)
+    print(f"Average Terran : {avg/len(scores)}")
+    # Zerg score
+    scores = cross_val_score(classifier_zerg, zerg_games, y_zerg_games, cv=5)
+    avg = 0
+    for s in scores:
+        avg += s
+    print(scores)
+    print(f"Average Zerg : {avg/len(scores)}")
+    # Protoss score
+    scores = cross_val_score(classifier_terran, terran_games, y_terran_games, cv=5)
+    avg = 0
+    for s in scores:
+        avg += s
+    print(scores)
+    print(f"Average Protoss : {avg/len(scores)}")
+    """
+
+    ids = data_tool.get_numbers_ids_reference(path_file_train)
+    for index, player in enumerate(y):
+        y[index] = ids[player]
+
+    print(y)
+    classifier = RandomForestRegressor()
+    # classifier = RandomForestClassifier()
+    # classifier = GradientBoostingClassifier()
+    # classifier = RandomForestClassifier(bootstrap=False)
+
+    scores = cross_val_score(classifier, X, y, cv=5)
+    avg = 0
+    for s in scores:
+        avg += s
+    print(scores)
+    print(f"Average : {avg/len(scores)}")
 
     """
     X_train, X_test, y_train, y_test = train_test_split(features, y, test_size=0.20)
@@ -199,13 +268,6 @@ def evaluate_model(path_file_train):
         y_pred = classifier.predict(X_test)
         print(confusion_matrix(y_test, y_pred))
     """
-    # classifier.fit(X, y)
-    scores = cross_val_score(classifier, X, y, cv=5)
-    avg = 0
-    for s in scores:
-        avg += s
-    print(scores)
-    print(f"Average : {avg/len(scores)}")
 
 
 def make_and_save_predictions(X_test, classifier, namefile: str):
@@ -246,7 +308,10 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
     for elem in X:
         y.append(elem.pop(0))
 
-    classifier = RandomForestClassifier()
+    # classifier = RandomForestClassifier()
+    # classifier = RandomForestClassifier(class_weight="balanced")
+
+    classifier = GradientBoostingClassifier()
     classifier.fit(X, y)
 
     print("Read csv test data...")
@@ -263,14 +328,127 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
             sub_file.write(f"{i+1},{res}\n")
 
 
+def train_and_make_predictions_three_classifiers(path_file_train: str, path_file_test: str, namefile: str):
+    print("Read csv ...")
+    data = data_tool.read_csv(path_file_train)
+    print("Get Features ...")
+    X = data_tool.get_features(data, train=True)
+    print("Train model...")
+    y = []
+    for elem in X:
+        y.append(elem.pop(0))
+
+    # One classifier for each race
+    Protoss = 0
+    Zerg = 1
+    Terran = 2
+
+    terran_games = []
+    protoss_games = []
+    zerg_games = []
+
+    y_terran_games = []
+    y_protoss_games = []
+    y_zerg_games = []
+
+    for index, values in enumerate(X):
+        if values[0] == Zerg:
+            zerg_games.append(values)
+            y_zerg_games.append(y[index])
+        elif values[0] == Protoss:
+            protoss_games.append(values)
+            y_protoss_games.append(y[index])
+        elif values[0] == Terran:
+            terran_games.append(values)
+            y_terran_games.append(y[index])
+
+    classifier_terran = RandomForestClassifier()
+    classifier_zerg = RandomForestClassifier()
+    classifier_protoss = RandomForestClassifier()
+
+    classifier_terran.fit(terran_games, y_terran_games) 
+    classifier_protoss.fit(protoss_games, y_protoss_games)
+    classifier_zerg.fit(zerg_games, y_zerg_games)
+
+    # classifier.fit(X, y)
+
+    print("Read csv test data...")
+    data = data_tool.read_csv(path_file_test)
+    print("Get Features test data ...")
+    features = data_tool.get_features(data, train=False)
+
+    print("Evaluate results...")
+    y_pred = []
+    with open(namefile, 'w') as sub_file:
+        sub_file.write("RowId,prediction\n")
+        for game in features:
+            print(game)
+            if game[0] == Terran:
+                pred = classifier_terran.predict([game])
+                print(pred)
+            elif game[0] == Zerg:
+                pred = classifier_zerg.predict([game])
+                print(pred)
+            elif game[0] == Protoss:
+                pred = classifier_protoss.predict([game])
+                print(pred)
+            
+            y_pred.append(pred[0])
+        # y_pred = classifier.predict(features)
+        print("Store results...")
+        for i, res in enumerate(y_pred):
+            sub_file.write(f"{i+1},{res}\n")
+
+
+def random_forest_experiements(path_file_train: str):
+    print("Read csv ...")
+    data = data_tool.read_csv(path_file_train)
+    print("Get Features ...")
+    X = data_tool.get_features(data, train=True)
+    print("Testing model...")
+    y = []
+    for elem in X:
+        y.append(elem.pop(0))
+
+    results_n_estimators_x = []
+    results_n_estimators_y = []
+    # 20 by 20 from 10 to 100 
+    for i in range(10, 110, 10):
+        classifier = RandomForestClassifier(n_estimators=i)
+        score = cross_val_score(classifier, X, y, cv=5)
+        print(f"Estimators = {i} : Average {score.mean()}")
+        results_n_estimators_x.append(i)
+        results_n_estimators_y.append(score.mean())
+    
+    # 100 by 100 from 100 to 1500
+    for i in range(200, 1100, 100):
+        classifier = RandomForestClassifier(n_estimators=i)
+        score = cross_val_score(classifier, X, y, cv=5)
+        print(f"Estimators = {i} : Average {score.mean()}")
+        results_n_estimators_x.append(i)
+        results_n_estimators_y.append(score.mean())
+    
+
+    # TODO Faire une fonction linéaire, pas un bar plot
+    plt.bar(results_n_estimators_x, results_n_estimators_y, width=10, color='r', align='edge')
+    plt.show()
+
 if __name__ == "__main__":
+    """
     train_and_make_predictions(
         "starcraft-2-player-prediction-challenge-2020/TRAIN.CSV",
         "starcraft-2-player-prediction-challenge-2020/TEST.CSV",
-        "Results/20_SUBMISSION.CSV"
+        "Results/26_SUBMISSION.CSV"
     )
+
+    train_and_make_predictions_three_classifiers(
+        "starcraft-2-player-prediction-challenge-2020/TRAIN.CSV",
+        "starcraft-2-player-prediction-challenge-2020/TEST.CSV",
+        "Results/27_SUBMISSION.CSV"
+    )
+    """
     # evaluate_model("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     print("Done")
 
-    # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")

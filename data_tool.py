@@ -10,6 +10,8 @@ class PlayedRace(Enum):
     Terran = 2
 
 
+
+
 # TRAIN.CSV: max = t5770
 def get_max_time_frame(data):
     max = 0
@@ -32,6 +34,17 @@ def read_csv(path_to_file: str):
 
     return content
 
+
+def get_numbers_ids_reference(path_to_file: str):
+    data = read_csv(path_to_file)
+    ids = {}
+    counter = 0
+    for play in data:
+        if play[0] not in ids:
+            ids[play[0]] = counter
+            counter += 1
+
+    return ids
 
 def train_csv_to_data_matrix(path_to_file: str):
     with open(path_to_file, 'r') as csv_file:
@@ -495,8 +508,8 @@ def get_features(data, train: bool):
 
         featured_data.append(new_line)
 
-    print(featured_data[0])
-    print(labels)
+    # print(featured_data[0])
+    # print(labels)
     return featured_data
 
 
