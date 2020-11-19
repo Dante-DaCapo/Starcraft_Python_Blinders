@@ -455,27 +455,28 @@ def random_forest_experiements(path_file_train: str):
     for elem in X:
         y.append(elem.pop(0))
 
-    results_n_estimators_x = []
-    results_n_estimators_y = []
-    # 20 by 20 from 10 to 100 
-    for i in range(10, 110, 10):
-        classifier = RandomForestClassifier(n_estimators=i)
-        score = cross_val_score(classifier, X, y, cv=5)
-        print(f"Estimators = {i} : Average {score.mean()}")
-        results_n_estimators_x.append(i)
-        results_n_estimators_y.append(score.mean())
-    
-    # 100 by 100 from 100 to 1500
-    for i in range(200, 1100, 100):
-        classifier = RandomForestClassifier(n_estimators=i)
-        score = cross_val_score(classifier, X, y, cv=5)
-        print(f"Estimators = {i} : Average {score.mean()}")
-        results_n_estimators_x.append(i)
-        results_n_estimators_y.append(score.mean())
-    
+    for i in [0, 1, 2]:
+        results_n_estimators_x = []
+        results_n_estimators_y = []
+        # 20 by 20 from 10 to 100 
+        for i in range(10, 110, 10):
+            classifier = RandomForestClassifier(n_estimators=i)
+            score = cross_val_score(classifier, X, y, cv=5)
+            print(f"Estimators = {i} : Average {score.mean()}")
+            results_n_estimators_x.append(i)
+            results_n_estimators_y.append(score.mean())
+        
+        # 100 by 100 from 100 to 1500
+        for i in range(200, 1100, 100):
+            classifier = RandomForestClassifier(n_estimators=i)
+            score = cross_val_score(classifier, X, y, cv=5)
+            print(f"Estimators = {i} : Average {score.mean()}")
+            results_n_estimators_x.append(i)
+            results_n_estimators_y.append(score.mean())
 
-    # TODO Faire une fonction linéaire, pas un bar plot
-    plt.plot(results_n_estimators_x, results_n_estimators_y)
+        # TODO Faire une fonction linéaire, pas un bar plot
+        plt.plot(results_n_estimators_x, results_n_estimators_y)
+
     plt.show()
 
 
@@ -586,8 +587,8 @@ if __name__ == "__main__":
         "Results/27_SUBMISSION.CSV"
     )
     """
-    evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    # evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
-    # random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     print("Done")
 
