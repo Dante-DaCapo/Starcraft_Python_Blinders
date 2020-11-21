@@ -465,7 +465,7 @@ def random_forest_experiements(path_file_train: str):
             print(f"Estimators = {i} : Average {score.mean()}")
             results_n_estimators_x.append(i)
             results_n_estimators_y.append(score.mean())
-        
+        """ 
         # 100 by 100 from 100 to 1500
         for i in range(200, 1100, 100):
             classifier = RandomForestClassifier(n_estimators=i)
@@ -473,7 +473,7 @@ def random_forest_experiements(path_file_train: str):
             print(f"Estimators = {i} : Average {score.mean()}")
             results_n_estimators_x.append(i)
             results_n_estimators_y.append(score.mean())
-
+        """
         # TODO Faire une fonction linéaire, pas un bar plot
         plt.plot(results_n_estimators_x, results_n_estimators_y)
 
@@ -491,19 +491,28 @@ def evaluate_model_2(path_file_train: str):
     for elem in X:
         y.append(elem.pop(0))
 
-    classifier = RandomForestClassifier()
-    
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=40) 
 
 
     # fit the model
-    model = RandomForestClassifier()
+    model = RandomForestClassifier(n_estimators=1000)
     model.fit(X_train, y_train)
     # make predictions
     y_pred = model.predict(X_test)
     # evaluate predictions
     acc = accuracy_score(y_test, y_pred)
     print('Accuracy standard params: %.3f' % acc)
+
+    # fit the model
+    model2 = RandomForestClassifier(n_estimators=1000, class_weight='balanced_subsample')
+    model2.fit(X_train, y_train)
+    # make predictions
+    y_pred = model2.predict(X_test)
+    # evaluate predictions
+    acc = accuracy_score(y_test, y_pred)
+    print('Accuracy standard params: %.3f' % acc)
+
+
 
     """
     # GridSearch
@@ -529,7 +538,6 @@ def evaluate_model_2(path_file_train: str):
     print(grid_search.best_params_)
 
     best_grid = grid_search.best_estimator_
-    """
     model2 = RandomForestClassifier(
         bootstrap=True,
         max_depth = 60,
@@ -550,6 +558,7 @@ def evaluate_model_2(path_file_train: str):
     # n_estimators = 1000
     # max_depth = 40
     # max_features = 40
+    """
     """
     num_est = range(1, 60, 5)
     train_scoreNum, test_scoreNum = validation_curve(
@@ -587,8 +596,8 @@ if __name__ == "__main__":
         "Results/27_SUBMISSION.CSV"
     )
     """
-    # evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
-    random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    # random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     print("Done")
 
