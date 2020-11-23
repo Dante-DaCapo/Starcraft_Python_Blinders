@@ -348,14 +348,10 @@ def train_and_make_predictions(path_file_train: str, path_file_test: str, namefi
     # classifier = RandomForestClassifier(class_weight="balanced")
 
     classifier = RandomForestClassifier(
-        n_estimators= 300,
-        min_samples_split= 2,
-        min_samples_leaf= 1,
-        max_features= 'sqrt',
-        max_depth= 50,
-        criterion= 'entropy',
-        bootstrap= True,
-        oob_score=True
+        n_estimators= 1000,
+        max_features= 'auto',
+        criterion= 'gini',
+        class_weight='balanced_subsamples',
     )
     classifier.fit(X, y)
 
@@ -406,11 +402,25 @@ def train_and_make_predictions_three_classifiers(path_file_train: str, path_file
         elif values[0] == Terran:
             terran_games.append(values)
             y_terran_games.append(y[index])
-
-    classifier_terran = RandomForestClassifier()
-    classifier_zerg = RandomForestClassifier()
-    classifier_protoss = RandomForestClassifier()
-
+    
+    classifier_terran = RandomForestClassifier(
+        n_estimators= 1500,
+        max_features= 'auto',
+        criterion= 'gini',
+        class_weight='balanced_subsample',
+    )
+    classifier_zerg = RandomForestClassifier(
+        n_estimators= 1500,
+        max_features= 'auto',
+        criterion= 'entropy',
+        class_weight='balanced_subsample',
+    )
+    classifier_protoss = RandomForestClassifier(
+        n_estimators= 1500,
+        max_features= 'auto',
+        criterion= 'gini',
+        class_weight='balanced_subsample',
+    )
     classifier_terran.fit(terran_games, y_terran_games) 
     classifier_protoss.fit(protoss_games, y_protoss_games)
     classifier_zerg.fit(zerg_games, y_zerg_games)
@@ -584,20 +594,20 @@ def evaluate_model_2(path_file_train: str):
 
 
 if __name__ == "__main__":
+    
     """
     train_and_make_predictions(
         "starcraft-2-player-prediction-challenge-2020/TRAIN.CSV",
         "starcraft-2-player-prediction-challenge-2020/TEST.CSV",
-        "Results/30_SUBMISSION.CSV"
+        "Results/ANOTHER_SUBMISSION.CSV"
     )
+    """
     train_and_make_predictions_three_classifiers(
         "starcraft-2-player-prediction-challenge-2020/TRAIN.CSV",
         "starcraft-2-player-prediction-challenge-2020/TEST.CSV",
-        "Results/27_SUBMISSION.CSV"
+        "Results/YOLO5_SUBMISSION.CSV"
     )
-    """
-    evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
+    # evaluate_model_2("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # data_tool.get_informations_data("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     # random_forest_experiements("starcraft-2-player-prediction-challenge-2020/TRAIN.CSV")
     print("Done")
-

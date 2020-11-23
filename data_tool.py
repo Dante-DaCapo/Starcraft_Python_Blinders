@@ -435,8 +435,28 @@ def get_features(data, train: bool):
         elif not train and i < 3:
             continue
         to_add.append(f"{elem}:T60")
+    labels.extend(to_add)    
+    """ 
+    # Actions under 80sec
+    to_add = []
+    for i, elem in enumerate(labels):
+        if train and i < 4:
+            continue
+        elif not train and i < 3:
+            continue
+        to_add.append(f"{elem}:T80")
     labels.extend(to_add)
 
+    # Actions under 100sec
+    to_add = []
+    for i, elem in enumerate(labels):
+        if train and i < 4:
+            continue
+        elif not train and i < 3:
+            continue
+        to_add.append(f"{elem}:T100")
+    labels.extend(to_add
+    """
     # Action per minute and duration
     # labels.append('apm')
     # labels.append('duration')
@@ -471,9 +491,9 @@ def get_features(data, train: bool):
 
                 if t_party < 20:
                     new_line[labels.index(f"{elem}:T20")] += 1
-                if t_party < 40:
+                elif t_party < 40:
                     new_line[labels.index(f"{elem}:T40")] += 1
-                if t_party < 60:
+                elif t_party < 60:
                     new_line[labels.index(f"{elem}:T60")] += 1
 
                 if "hotkey" in elem:
